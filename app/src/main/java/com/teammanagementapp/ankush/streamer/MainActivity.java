@@ -117,7 +117,18 @@ public class MainActivity extends AppCompatActivity {
         webView.setAllowDrawDelay(0);
 
         // to show that external WebViewClient is still working
-        webView.setWebViewClient(webViewClient);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+            }
+        });
 
         // to show that external WebChromeClient is still working
         webView.setWebChromeClient(new WebChromeClient() {
