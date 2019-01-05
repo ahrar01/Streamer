@@ -1,6 +1,8 @@
 package com.teammanagementapp.ankush.streamer;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -198,5 +200,30 @@ public class MainActivity extends AppCompatActivity {
         webView.dispose(null);
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Exit App");
+            dialog.setMessage("Browser has nothing to go back, so what next?");
+            dialog.setPositiveButton("EXIT ME", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+            dialog.setCancelable(false);
+            dialog.setNegativeButton("STAY HERE", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).show();
+
+        }
     }
 }
