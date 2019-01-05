@@ -29,10 +29,18 @@ public class MainActivity extends AppCompatActivity {
     public static final boolean DEVELOPMENT_BUILD = true;
 
 
+    private WebChromeClient webChromeClient = new WebChromeClient() {
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            progress.setProgress(newProgress);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         // binding controls to elements from xml to java
         bindControls();
@@ -40,10 +48,7 @@ public class MainActivity extends AppCompatActivity {
         initControls();
 
 
-
     }
-
-
 
     private void bindControls() {
         url = (EditText) findViewById(R.id.main_url);
@@ -53,7 +58,19 @@ public class MainActivity extends AppCompatActivity {
         settings = (Button) findViewById(R.id.main_settings);
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
+        webView.loadUrl("https://www.google.com");
     }
+
+    private void setProgressVisible(boolean visible) {
+        progress.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    private void updateButtons() {
+        //clicklabe only if changing is possible
+        back.setEnabled(webView.canGoBack());
+        forward.setEnabled(webView.canGoForward());
+    }
+
     private void initControls() {
         ok.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,8 +100,7 @@ public class MainActivity extends AppCompatActivity {
                     navigateSettings();
                 }
             });
-        }
-        else {
+        } else {
             // no external ablock is there so hiding the setting button
 
             settings.setVisibility(View.GONE);
@@ -105,23 +121,20 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(webViewClient);
 
         // to show that external WebChromeClient is still working
-        webView.setWebChromeClient(webChromeClient);
-    }
-    private void setProgressVisible(boolean visible) {
-        progress.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
-    }
-    private void updateButtons() {
-        //clicklabe only if changing is possible
-        back.setEnabled(webView.canGoBack());
-        forward.setEnabled(webView.canGoForward());
-    }
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                progress.setProgress(newProgress);
+            }
 
-    private WebChromeClient webChromeClient = new WebChromeClient(){
-        @Override
-        public void onProgressChanged(WebView view, int newProgress) {
-            progress.setProgress(newProgress);
-        }
-    };
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                super.onReceivedTitle(view, title);
+                getSupportActionBar().setTitle(title);
+            }
+        });
+    }
 
 
     private WebViewClient webViewClient = new WebViewClient() {
@@ -145,16 +158,14 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
     private void initAdblockWebView() {
         if (USE_EXTERNAL_ADBLOCKENGINE) {
             // external AdblockEngine
             webView.setProvider(AdblockHelper.get().getProvider());
-        }else
-            {
+        } else {
             // AdblockWebView will create internal AdblockEngine instance
 
-            }
+        }
     }
 
     private void loadPrev() {
@@ -165,13 +176,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideSoftwareKeyboard() {
-        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(url.getWindowToken(), 0);
     }
 
     private void loadForward() {
         hideSoftwareKeyboard();
-        if (webView.canGoForward()){
+        if (webView.canGoForward()) {
             webView.goForward();
         }
     }
@@ -180,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
         hideSoftwareKeyboard();
         webView.loadUrl(prepareUrl(url.getText().toString()));
     }
+
     private String prepareUrl(String url) {
         if (!url.startsWith("http"))
             url = "http://" + url;
@@ -191,8 +203,6 @@ public class MainActivity extends AppCompatActivity {
     private void navigateSettings() {
         //startActivity(new Intent(this, SettingsActivity.class));
     }
-
-
 
 
     @Override
