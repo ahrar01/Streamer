@@ -5,19 +5,25 @@
     tools:context="com.sabithpkcmnr.webviewmaster.MainActivity">
 
     <item
-        android:id="@+id/myMenuOne"
+        android:id="@+id/backArrow"
         android:icon="@drawable/ic_arrow_back_black_24dp"
         android:title="Item"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/myMenuTwo"
+        android:id="@+id/forwardArrow"
         android:icon="@drawable/ic_arrow_forward_black_24dp"
         android:title="Item"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/myMenuThree"
-        android:title="Item" />
+        android:id="@+id/download"
+        android:icon="@drawable/ic_file_download_black_24dp"
+        android:title="Download"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/Settings"
+        android:title="Settings" />
 
 </menu>
