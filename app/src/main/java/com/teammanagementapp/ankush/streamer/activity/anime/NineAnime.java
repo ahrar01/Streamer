@@ -1,14 +1,19 @@
-package com.teammanagementapp.ankush.streamer;
+package com.teammanagementapp.ankush.streamer.activity.anime;
 
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Patterns;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.Patterns;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,43 +21,74 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.teammanagementapp.ankush.streamer.R;
+import com.teammanagementapp.ankush.streamer.activity.MainActivity;
+
 import org.adblockplus.libadblockplus.android.settings.AdblockHelper;
 import org.adblockplus.libadblockplus.android.webview.AdblockWebView;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.IOException;
+import java.io.InputStream;
+
+public class NineAnime extends AppCompatActivity {
 
     private ProgressBar progress;
     private EditText url;
+    private FrameLayout customViewContainer;
     private AdblockWebView webView;
     public static final boolean USE_EXTERNAL_ADBLOCKENGINE = false;
     public static final boolean DEVELOPMENT_BUILD = true;
+    private WebChromeClient.CustomViewCallback customViewCallback;
+    private View mCustomView;
+    private Toolbar mTopToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+        setContentView(R.layout.activity_nine_anime);
         // binding controls to elements from xml to java
-        bindControls();
+        if(savedInstanceState==null)
+        bindControls(true);
+        else
+        bindControls(false);
 
+        setSupportActionBar(mTopToolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
         initControls();
-
 
     }
 
-    private void bindControls() {
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        webView.restoreState(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        webView.saveState(outState);
+    }
+
+    private void bindControls(boolean isItNewActivity) {
+
         url = (EditText) findViewById(R.id.main_url);
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
-        webView.loadUrl("https://www.google.com");
+        if(isItNewActivity)
+        webView.loadUrl(prepareUrl("9anime"));
+
+        customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
+        mTopToolbar = (Toolbar) findViewById(R.id.toolbar);
 
         url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -84,23 +120,93 @@ public class MainActivity extends AppCompatActivity {
 
         // to show that external WebViewClient is still working
         webView.setWebViewClient(webViewClient);
-
+        webView.getSettings().setAppCacheEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setSaveFormData(true);
         // to show that external WebChromeClient is still working
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                super.onProgressChanged(view, newProgress);
-                progress.setProgress(newProgress);
-            }
+        webView.setWebChromeClient(mWebChromeClient);
 
-            @Override
-            public void onReceivedTitle(WebView view, String title) {
-                super.onReceivedTitle(view, title);
-                getSupportActionBar().setTitle(title);
-            }
-        });
     }
 
+    private WebChromeClient  mWebChromeClient = new WebChromeClient() {
+
+        private Bitmap mDefaultVideoPoster;
+        private View mVideoProgressView;
+
+
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            super.onProgressChanged(view, newProgress);
+            progress.setProgress(newProgress);
+        }
+
+        @Override
+        public void onReceivedTitle(WebView view, String title) {
+            super.onReceivedTitle(view, title);
+            getSupportActionBar().setTitle(title);
+        }
+
+        @Override
+        public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) {
+            onShowCustomView(view,  callback);
+        }
+
+        @Override
+        public void onShowCustomView(View view, CustomViewCallback callback) {
+            super.onShowCustomView(view, callback);
+
+            if (mCustomView != null) {
+                callback.onCustomViewHidden();
+                return;
+            }
+            mCustomView = view;
+            webView.setVisibility(View.GONE);
+            customViewContainer.setVisibility(View.VISIBLE);
+            customViewContainer.addView(view);
+            customViewCallback = callback;
+
+
+        }
+
+        @Override
+        public View getVideoLoadingProgressView() {
+
+            if (mVideoProgressView == null) {
+                LayoutInflater inflater = LayoutInflater.from(NineAnime.this);
+                mVideoProgressView = inflater.inflate(R.layout.video_progress, null);
+            }
+            return mVideoProgressView;
+        }
+        @Override
+        public void onHideCustomView() {
+            super.onHideCustomView();    //To change body of overridden methods use File | Settings | File Templates.
+            if (mCustomView == null)
+                return;
+
+            webView.setVisibility(View.VISIBLE);
+            customViewContainer.setVisibility(View.GONE);
+
+            // Hide the custom view.
+            mCustomView.setVisibility(View.GONE);
+
+            // Remove the custom view from its container.
+            customViewContainer.removeView(mCustomView);
+            customViewCallback.onCustomViewHidden();
+
+            mCustomView = null;
+        }
+
+
+    };
+
+
+    public boolean inCustomView() {
+        return (mCustomView != null);
+    }
+
+    public void hideCustomView() {
+        mWebChromeClient.onHideCustomView();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
@@ -112,6 +218,11 @@ public class MainActivity extends AppCompatActivity {
          */
         final MenuItem searchViewItem = menu.findItem(R.id.action_search);
         final SearchView searchViewAndroidActionBar = (SearchView) MenuItemCompat.getActionView(searchViewItem);
+
+        searchViewAndroidActionBar.setFocusable(true);
+        searchViewAndroidActionBar.setClickable(true);
+
+
         searchViewAndroidActionBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -154,27 +265,57 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
     private WebViewClient webViewClient = new WebViewClient() {
-        @Override
+
+        private void injectScriptFile(WebView view, String scriptFile) {
+            InputStream input;
+            try {
+                input = getAssets().open(scriptFile);
+                byte[] buffer = new byte[input.available()];
+                input.read(buffer);
+                input.close();
+
+                // String-ify the script byte-array using BASE64 encoding !!!
+                String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
+                view.loadUrl("javascript:(function() {" +
+                        "var parent = document.getElementsByTagName('head').item(0);" +
+                        "var script = document.createElement('script');" +
+                        "script.type = 'text/javascript';" +
+                        "script.innerHTML = window.atob('$encoded');" +
+                        "parent.appendChild(script)" +
+                        "})()");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+
+
+    @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setProgressVisible(true);
-
             // show updated URL (because of possible redirection)
-            MainActivity.this.url.setText(url);
+            NineAnime.this.url.setText(url);
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
-
             setProgressVisible(false);
             //attaching my own js script here
-
+           // injectScriptFile(view, "js/script.js");
         }
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return !Uri.parse(url).getHost().contains("9anime");
+        }
+
+
     };
 
     private void initAdblockWebView() {
@@ -225,16 +366,8 @@ public class MainActivity extends AppCompatActivity {
         if(Patterns.WEB_URL.matcher(query).matches()){
             return "http://www." +query;
         }else{
-                String s[]=query.split(" ");
-                query="";
-                for (String tmp:s) {
-                    if (query.equals("")){
-                        query=query + tmp;
-                    }else{
-                        query=query + "+" +tmp;
-                    }
-                }
-            return "https://www.google.com/search?q=" + query;
+
+            return "https://www.9anime.to";
         }
     }
 
@@ -269,4 +402,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
+
 }
