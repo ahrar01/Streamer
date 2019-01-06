@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.teammanagementapp.ankush.streamer;
+package com.teammanagementapp.ankush.streamer.activity;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;

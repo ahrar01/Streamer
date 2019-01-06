@@ -1,13 +1,16 @@
-package com.teammanagementapp.ankush.streamer;
+package com.teammanagementapp.ankush.streamer.activity.anime;
 
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Patterns;
 import android.support.v7.widget.SearchView;
+import android.util.Base64;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
@@ -23,10 +27,16 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.teammanagementapp.ankush.streamer.R;
+import com.teammanagementapp.ankush.streamer.activity.MainActivity;
+
 import org.adblockplus.libadblockplus.android.settings.AdblockHelper;
 import org.adblockplus.libadblockplus.android.webview.AdblockWebView;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.IOException;
+import java.io.InputStream;
+
+public class NineAnime extends AppCompatActivity {
 
     private ProgressBar progress;
     private EditText url;
@@ -37,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_nine_anime);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         // binding controls to elements from xml to java
@@ -45,14 +55,14 @@ public class MainActivity extends AppCompatActivity {
 
         initControls();
 
-
     }
+
 
     private void bindControls() {
         url = (EditText) findViewById(R.id.main_url);
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
-        webView.loadUrl("https://www.google.com");
+        webView.loadUrl(prepareUrl("9anime"));
 
         url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -98,7 +108,24 @@ public class MainActivity extends AppCompatActivity {
                 super.onReceivedTitle(view, title);
                 getSupportActionBar().setTitle(title);
             }
+
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                super.onShowCustomView(view, callback);
+
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                View.SYSTEM_UI_FLAG_IMMERSIVE);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+
+            }
         });
+
     }
 
 
@@ -112,6 +139,11 @@ public class MainActivity extends AppCompatActivity {
          */
         final MenuItem searchViewItem = menu.findItem(R.id.action_search);
         final SearchView searchViewAndroidActionBar = (SearchView) MenuItemCompat.getActionView(searchViewItem);
+
+        searchViewAndroidActionBar.setFocusable(true);
+        searchViewAndroidActionBar.setClickable(true);
+
+
         searchViewAndroidActionBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -154,27 +186,57 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
     private WebViewClient webViewClient = new WebViewClient() {
-        @Override
+
+        private void injectScriptFile(WebView view, String scriptFile) {
+            InputStream input;
+            try {
+                input = getAssets().open(scriptFile);
+                byte[] buffer = new byte[input.available()];
+                input.read(buffer);
+                input.close();
+
+                // String-ify the script byte-array using BASE64 encoding !!!
+                String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
+                view.loadUrl("javascript:(function() {" +
+                        "var parent = document.getElementsByTagName('head').item(0);" +
+                        "var script = document.createElement('script');" +
+                        "script.type = 'text/javascript';" +
+                        "script.innerHTML = window.atob('$encoded');" +
+                        "parent.appendChild(script)" +
+                        "})()");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+
+
+    @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setProgressVisible(true);
-
             // show updated URL (because of possible redirection)
-            MainActivity.this.url.setText(url);
+            NineAnime.this.url.setText(url);
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
-
             setProgressVisible(false);
             //attaching my own js script here
-
+           // injectScriptFile(view, "js/script.js");
         }
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return !Uri.parse(url).getHost().contains("9anime");
+        }
+
+
     };
 
     private void initAdblockWebView() {
@@ -225,15 +287,15 @@ public class MainActivity extends AppCompatActivity {
         if(Patterns.WEB_URL.matcher(query).matches()){
             return "http://www." +query;
         }else{
-                String s[]=query.split(" ");
-                query="";
-                for (String tmp:s) {
-                    if (query.equals("")){
-                        query=query + tmp;
-                    }else{
-                        query=query + "+" +tmp;
-                    }
+            String s[]=query.split(" ");
+            query="";
+            for (String tmp:s) {
+                if (query.equals("")){
+                    query=query + tmp;
+                }else{
+                    query=query + "+" +tmp;
                 }
+            }
             return "https://www.google.com/search?q=" + query;
         }
     }
@@ -269,4 +331,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
+
 }
