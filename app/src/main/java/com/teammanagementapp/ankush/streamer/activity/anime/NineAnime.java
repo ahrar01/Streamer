@@ -12,6 +12,7 @@ import android.support.v7.widget.SearchView;
 import android.util.Base64;
 import android.util.Patterns;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,6 +24,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,11 +42,14 @@ public class NineAnime extends AppCompatActivity {
 
     private ProgressBar progress;
     private EditText url;
+    private FrameLayout customViewContainer;
     private AdblockWebView webView;
     public static final boolean USE_EXTERNAL_ADBLOCKENGINE = false;
     public static final boolean DEVELOPMENT_BUILD = true;
+    private WebChromeClient.CustomViewCallback customViewCallback;
+    private View mCustomView;
 
-    @Override
+       @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nine_anime);
@@ -63,6 +68,7 @@ public class NineAnime extends AppCompatActivity {
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
         webView.loadUrl(prepareUrl("9anime"));
+        customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
 
         url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -95,39 +101,97 @@ public class NineAnime extends AppCompatActivity {
         // to show that external WebViewClient is still working
         webView.setWebViewClient(webViewClient);
 
+        webView.getSettings().setAppCacheEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setSaveFormData(true);
+
         // to show that external WebChromeClient is still working
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                super.onProgressChanged(view, newProgress);
-                progress.setProgress(newProgress);
-            }
-
-            @Override
-            public void onReceivedTitle(WebView view, String title) {
-                super.onReceivedTitle(view, title);
-                getSupportActionBar().setTitle(title);
-            }
-
-            @Override
-            public void onShowCustomView(View view, CustomViewCallback callback) {
-                super.onShowCustomView(view, callback);
-
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                View.SYSTEM_UI_FLAG_IMMERSIVE);
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
-            }
-        });
+
+        webView.setWebChromeClient(mWebChromeClient);
 
     }
 
+    private WebChromeClient  mWebChromeClient = new WebChromeClient() {
+
+        private Bitmap mDefaultVideoPoster;
+        private View mVideoProgressView;
+
+
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            super.onProgressChanged(view, newProgress);
+            progress.setProgress(newProgress);
+        }
+
+        @Override
+        public void onReceivedTitle(WebView view, String title) {
+            super.onReceivedTitle(view, title);
+            getSupportActionBar().setTitle(title);
+        }
+
+        @Override
+        public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) {
+            onShowCustomView(view,  callback);
+        }
+
+        @Override
+        public void onShowCustomView(View view, CustomViewCallback callback) {
+            super.onShowCustomView(view, callback);
+
+            if (mCustomView != null) {
+                callback.onCustomViewHidden();
+                return;
+            }
+            mCustomView = view;
+            webView.setVisibility(View.GONE);
+            customViewContainer.setVisibility(View.VISIBLE);
+            customViewContainer.addView(view);
+            customViewCallback = callback;
+
+
+        }
+
+        @Override
+        public View getVideoLoadingProgressView() {
+
+            if (mVideoProgressView == null) {
+                LayoutInflater inflater = LayoutInflater.from(NineAnime.this);
+                mVideoProgressView = inflater.inflate(R.layout.video_progress, null);
+            }
+            return mVideoProgressView;
+        }
+        @Override
+        public void onHideCustomView() {
+            super.onHideCustomView();    //To change body of overridden methods use File | Settings | File Templates.
+            if (mCustomView == null)
+                return;
+
+            webView.setVisibility(View.VISIBLE);
+            customViewContainer.setVisibility(View.GONE);
+
+            // Hide the custom view.
+            mCustomView.setVisibility(View.GONE);
+
+            // Remove the custom view from its container.
+            customViewContainer.removeView(mCustomView);
+            customViewCallback.onCustomViewHidden();
+
+            mCustomView = null;
+        }
+
+
+    };
+
+
+    public boolean inCustomView() {
+        return (mCustomView != null);
+    }
+
+    public void hideCustomView() {
+        mWebChromeClient.onHideCustomView();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
