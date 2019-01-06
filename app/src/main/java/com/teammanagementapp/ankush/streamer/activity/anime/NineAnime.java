@@ -85,7 +85,7 @@ public class NineAnime extends AppCompatActivity {
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
         if(isItNewActivity)
-        webView.loadUrl(prepareUrl("9anime"));
+        webView.loadUrl(prepareUrl("9anime.to"));
 
         customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
         mTopToolbar = (Toolbar) findViewById(R.id.toolbar);
