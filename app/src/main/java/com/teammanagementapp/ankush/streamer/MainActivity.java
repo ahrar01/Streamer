@@ -110,14 +110,15 @@ public class MainActivity extends AppCompatActivity {
         /*
          **Search Bar
          */
-        MenuItem searchViewItem = menu.findItem(R.id.action_search);
+        final MenuItem searchViewItem = menu.findItem(R.id.action_search);
         final SearchView searchViewAndroidActionBar = (SearchView) MenuItemCompat.getActionView(searchViewItem);
         searchViewAndroidActionBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchViewAndroidActionBar.clearFocus();
+                searchViewItem.collapseActionView();
                 loadUrl(query);
-                menu.clear();
+
 
                 return true;
             }
