@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -142,7 +143,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+
             setProgressVisible(false);
+            //attaching my own js script here
+
         }
 
         @Override
@@ -187,18 +191,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String prepareUrl(String url) {
-        if (!url.startsWith("http"))
-            url = "http://" + url;
 
+        if (url.startsWith("http"))
+            return url;
+        else
+
+        if (url.startsWith("www"))
+            return  "http://" + url;
         // make sure url is valid URL
-        return url;
+        if(Patterns.WEB_URL.matcher(url).matches()){
+            return "http://www." +url;
+        }else{
+                String s[]=url.split(" ");
+                url="";
+                for (String tmp:s) {
+                    if (url.equals("")){
+                        url=url + tmp;
+                    }else{
+                        url=url + "+" +tmp;
+                    }
+                }
+            return "https://www.google.com/search?q=" + url;
+        }
     }
 
 
     @Override
     protected void onDestroy() {
         webView.dispose(null);
-
         super.onDestroy();
     }
 
