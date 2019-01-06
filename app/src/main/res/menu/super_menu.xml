@@ -17,10 +17,16 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search_24dp"
+        android:title="Search"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="always|collapseActionView" />
+
+    <item
         android:id="@+id/download"
         android:icon="@drawable/ic_file_download_black_24dp"
-        android:title="Download"
-        app:showAsAction="always" />
+        android:title="Download" />
 
     <item
         android:id="@+id/Settings"

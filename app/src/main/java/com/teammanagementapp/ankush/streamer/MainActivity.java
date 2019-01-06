@@ -2,9 +2,11 @@ package com.teammanagementapp.ankush.streamer;
 
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -104,6 +106,24 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater myMenuInflater = getMenuInflater();
         myMenuInflater.inflate(R.menu.super_menu, menu);
+
+        /*
+         **Search Bar
+         */
+        MenuItem searchViewItem = menu.findItem(R.id.action_search);
+        final SearchView searchViewAndroidActionBar = (SearchView) MenuItemCompat.getActionView(searchViewItem);
+        searchViewAndroidActionBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchViewAndroidActionBar.clearFocus();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
     }
 
