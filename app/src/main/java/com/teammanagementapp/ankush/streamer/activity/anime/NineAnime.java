@@ -156,11 +156,11 @@ public class NineAnime extends AppCompatActivity {
             super.onShowCustomView(view, callback);
 
             if (mCustomView != null) {
-                mTopToolbar.setVisibility(View.VISIBLE);
-                url.setVisibility(View.VISIBLE);
                 callback.onCustomViewHidden();
                 return;
             }
+
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             url.setVisibility(View.INVISIBLE);
             mTopToolbar.setVisibility(View.INVISIBLE);
             mCustomView = view;
@@ -187,6 +187,9 @@ public class NineAnime extends AppCompatActivity {
             if (mCustomView == null)
                 return;
 
+            mTopToolbar.setVisibility(View.VISIBLE);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            url.setVisibility(View.VISIBLE);
             webView.setVisibility(View.VISIBLE);
             customViewContainer.setVisibility(View.GONE);
 
