@@ -156,8 +156,6 @@ public class NineAnime extends AppCompatActivity {
             super.onShowCustomView(view, callback);
 
             if (mCustomView != null) {
-                mTopToolbar.setVisibility(View.VISIBLE);
-                url.setVisibility(View.VISIBLE);
                 callback.onCustomViewHidden();
                 return;
             }
@@ -187,6 +185,9 @@ public class NineAnime extends AppCompatActivity {
             if (mCustomView == null)
                 return;
 
+            mTopToolbar.setVisibility(View.VISIBLE);
+
+            url.setVisibility(View.VISIBLE);
             webView.setVisibility(View.VISIBLE);
             customViewContainer.setVisibility(View.GONE);
 
