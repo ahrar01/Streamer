@@ -85,7 +85,7 @@ public class NineAnime extends AppCompatActivity {
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
         if(isItNewActivity)
-        webView.loadUrl(prepareUrl("9anime"));
+        webView.loadUrl(prepareUrl("9anime.to"));
 
         customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
         mTopToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -156,9 +156,13 @@ public class NineAnime extends AppCompatActivity {
             super.onShowCustomView(view, callback);
 
             if (mCustomView != null) {
+                mTopToolbar.setVisibility(View.VISIBLE);
+                url.setVisibility(View.VISIBLE);
                 callback.onCustomViewHidden();
                 return;
             }
+            url.setVisibility(View.INVISIBLE);
+            mTopToolbar.setVisibility(View.INVISIBLE);
             mCustomView = view;
             webView.setVisibility(View.GONE);
             customViewContainer.setVisibility(View.VISIBLE);
