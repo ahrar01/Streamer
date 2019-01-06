@@ -18,7 +18,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loadUrl();
+                    loadUrl(url.getText().toString());
                     return true;
                 }
                 return false;
@@ -104,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         MenuInflater myMenuInflater = getMenuInflater();
         myMenuInflater.inflate(R.menu.super_menu, menu);
 
@@ -117,6 +116,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchViewAndroidActionBar.clearFocus();
+                loadUrl(query);
+                menu.clear();
+
                 return true;
             }
 
@@ -205,33 +207,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadUrl() {
+    private void loadUrl(String query) {
         hideSoftwareKeyboard();
-        webView.loadUrl(prepareUrl(url.getText().toString()));
+        webView.loadUrl(prepareUrl(query));
     }
 
-    private String prepareUrl(String url) {
+    private String prepareUrl(String query) {
 
-        if (url.startsWith("http"))
-            return url;
+        if (query.startsWith("http"))
+            return query;
         else
 
-        if (url.startsWith("www"))
-            return  "http://" + url;
+        if (query.startsWith("www"))
+            return  "http://" + query;
         // make sure url is valid URL
-        if(Patterns.WEB_URL.matcher(url).matches()){
-            return "http://www." +url;
+        if(Patterns.WEB_URL.matcher(query).matches()){
+            return "http://www." +query;
         }else{
-                String s[]=url.split(" ");
-                url="";
+                String s[]=query.split(" ");
+                query="";
                 for (String tmp:s) {
-                    if (url.equals("")){
-                        url=url + tmp;
+                    if (query.equals("")){
+                        query=query + tmp;
                     }else{
-                        url=url + "+" +tmp;
+                        query=query + "+" +tmp;
                     }
                 }
-            return "https://www.google.com/search?q=" + url;
+            return "https://www.google.com/search?q=" + query;
         }
     }
 
