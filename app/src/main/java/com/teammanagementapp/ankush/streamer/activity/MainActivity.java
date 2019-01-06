@@ -8,6 +8,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Patterns;
 import android.support.v7.widget.SearchView;
 import android.view.KeyEvent;
@@ -39,18 +40,19 @@ public class MainActivity extends AppCompatActivity {
     private AdblockWebView webView;
     public static final boolean USE_EXTERNAL_ADBLOCKENGINE = false;
     public static final boolean DEVELOPMENT_BUILD = true;
+    private Toolbar mTopToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         // binding controls to elements from xml to java
         bindControls();
+        setSupportActionBar(mTopToolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         initControls();
-
 
     }
 
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
         webView.loadUrl("https://www.google.com");
+        mTopToolbar = (Toolbar) findViewById(R.id.toolbar);
 
         url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override

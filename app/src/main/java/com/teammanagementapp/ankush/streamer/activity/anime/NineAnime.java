@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Patterns;
 import android.view.KeyEvent;
@@ -48,27 +49,46 @@ public class NineAnime extends AppCompatActivity {
     public static final boolean DEVELOPMENT_BUILD = true;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private View mCustomView;
+    private Toolbar mTopToolbar;
 
-       @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nine_anime);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
         // binding controls to elements from xml to java
-        bindControls();
+        if(savedInstanceState==null)
+        bindControls(true);
+        else
+        bindControls(false);
 
+        setSupportActionBar(mTopToolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
         initControls();
 
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        webView.restoreState(savedInstanceState);
+    }
 
-    private void bindControls() {
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        webView.saveState(outState);
+    }
+
+    private void bindControls(boolean isItNewActivity) {
+
         url = (EditText) findViewById(R.id.main_url);
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
+        if(isItNewActivity)
         webView.loadUrl(prepareUrl("9anime"));
+
         customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
+        mTopToolbar = (Toolbar) findViewById(R.id.toolbar);
 
         url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -100,15 +120,10 @@ public class NineAnime extends AppCompatActivity {
 
         // to show that external WebViewClient is still working
         webView.setWebViewClient(webViewClient);
-
         webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setSaveFormData(true);
-
         // to show that external WebChromeClient is still working
-
-
-
         webView.setWebChromeClient(mWebChromeClient);
 
     }
@@ -351,16 +366,8 @@ public class NineAnime extends AppCompatActivity {
         if(Patterns.WEB_URL.matcher(query).matches()){
             return "http://www." +query;
         }else{
-            String s[]=query.split(" ");
-            query="";
-            for (String tmp:s) {
-                if (query.equals("")){
-                    query=query + tmp;
-                }else{
-                    query=query + "+" +tmp;
-                }
-            }
-            return "https://www.google.com/search?q=" + query;
+
+            return "https://www.9anime.to";
         }
     }
 
