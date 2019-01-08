@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
     }
 
     private void setProgressVisible(boolean visible) {
@@ -164,10 +165,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         }
 
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return !Uri.parse(url).getHost().contains("9anime");
-        }
+
 
 
     };

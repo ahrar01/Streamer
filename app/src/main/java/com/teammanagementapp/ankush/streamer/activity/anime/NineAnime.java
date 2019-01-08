@@ -42,7 +42,6 @@ import java.io.InputStream;
 public class NineAnime extends AppCompatActivity {
 
     private ProgressBar progress;
-    private EditText url;
     private FrameLayout customViewContainer;
     private AdblockWebView webView;
     public static final boolean USE_EXTERNAL_ADBLOCKENGINE = false;
@@ -81,25 +80,13 @@ public class NineAnime extends AppCompatActivity {
 
     private void bindControls(boolean isItNewActivity) {
 
-        url = (EditText) findViewById(R.id.main_url);
         progress = (ProgressBar) findViewById(R.id.main_progress);
         webView = (AdblockWebView) findViewById(R.id.main_webview);
         if(isItNewActivity)
-        webView.loadUrl(prepareUrl("9anime.to"));
-
+        webView.loadUrl("https://www.9anime.to");
         customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
         mTopToolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loadUrl(url.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
     }
 
     private void setProgressVisible(boolean visible) {
@@ -161,7 +148,6 @@ public class NineAnime extends AppCompatActivity {
             }
 
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            url.setVisibility(View.INVISIBLE);
             mTopToolbar.setVisibility(View.INVISIBLE);
             mCustomView = view;
             webView.setVisibility(View.GONE);
@@ -189,7 +175,6 @@ public class NineAnime extends AppCompatActivity {
 
             mTopToolbar.setVisibility(View.VISIBLE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            url.setVisibility(View.VISIBLE);
             webView.setVisibility(View.VISIBLE);
             customViewContainer.setVisibility(View.GONE);
 
@@ -206,46 +191,11 @@ public class NineAnime extends AppCompatActivity {
 
     };
 
-
-    public boolean inCustomView() {
-        return (mCustomView != null);
-    }
-
-    public void hideCustomView() {
-        mWebChromeClient.onHideCustomView();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         MenuInflater myMenuInflater = getMenuInflater();
-        myMenuInflater.inflate(R.menu.super_menu, menu);
+        myMenuInflater.inflate(R.menu.defined_website_menu, menu);
 
-        /*
-         **Search Bar
-         */
-        final MenuItem searchViewItem = menu.findItem(R.id.action_search);
-        final SearchView searchViewAndroidActionBar = (SearchView) MenuItemCompat.getActionView(searchViewItem);
-
-        searchViewAndroidActionBar.setFocusable(true);
-        searchViewAndroidActionBar.setClickable(true);
-
-
-        searchViewAndroidActionBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchViewAndroidActionBar.clearFocus();
-                searchViewItem.collapseActionView();
-                loadUrl(query);
-
-
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -262,7 +212,7 @@ public class NineAnime extends AppCompatActivity {
                 break;
 
             case R.id.download:
-
+                    //enabling downloader to download videos from 9anime
                 break;
 
             case R.id.Settings:
@@ -302,8 +252,7 @@ public class NineAnime extends AppCompatActivity {
     @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setProgressVisible(true);
-            // show updated URL (because of possible redirection)
-            NineAnime.this.url.setText(url);
+
         }
 
         @Override
@@ -336,19 +285,13 @@ public class NineAnime extends AppCompatActivity {
     }
 
     private void loadPrev() {
-        hideSoftwareKeyboard();
         if (webView.canGoBack()) {
             webView.goBack();
         }
     }
 
-    private void hideSoftwareKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(url.getWindowToken(), 0);
-    }
 
     private void loadForward() {
-        hideSoftwareKeyboard();
         if (webView.canGoForward()) {
             webView.goForward();
         } else {
@@ -356,27 +299,7 @@ public class NineAnime extends AppCompatActivity {
         }
     }
 
-    private void loadUrl(String query) {
-        hideSoftwareKeyboard();
-        webView.loadUrl(prepareUrl(query));
-    }
 
-    private String prepareUrl(String query) {
-
-        if (query.startsWith("http"))
-            return query;
-        else
-
-        if (query.startsWith("www"))
-            return  "http://" + query;
-        // make sure url is valid URL
-        if(Patterns.WEB_URL.matcher(query).matches()){
-            return "http://www." +query;
-        }else{
-
-            return "https://www.9anime.to";
-        }
-    }
 
 
     @Override
@@ -390,23 +313,7 @@ public class NineAnime extends AppCompatActivity {
         if (webView.canGoBack()) {
             webView.goBack();
         } else {
-            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-            dialog.setTitle("Exit App");
-            dialog.setMessage("Browser has nothing to go back, so what next?");
-            dialog.setPositiveButton("EXIT ME", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
-            dialog.setCancelable(false);
-            dialog.setNegativeButton("STAY HERE", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            }).show();
-
+           super.onBackPressed();
         }
     }
 

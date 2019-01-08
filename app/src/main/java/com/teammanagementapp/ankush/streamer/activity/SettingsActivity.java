@@ -30,13 +30,11 @@ import org.adblockplus.libadblockplus.android.settings.BaseSettingsFragment;
 import org.adblockplus.libadblockplus.android.settings.AdblockSettingsStorage;
 import org.adblockplus.libadblockplus.android.settings.WhitelistedDomainsSettingsFragment;
 
-public class SettingsActivity
-  extends PreferenceActivity
-  implements
+public class SettingsActivity  extends PreferenceActivity implements
     BaseSettingsFragment.Provider,
     GeneralSettingsFragment.Listener,
-    WhitelistedDomainsSettingsFragment.Listener
-{
+    WhitelistedDomainsSettingsFragment.Listener {
+
   private static final String TAG = Utils.getTag(SettingsActivity.class);
 
   @Override
@@ -82,7 +80,7 @@ public class SettingsActivity
     return AdblockHelper.get().getStorage();
   }
 
-  // listener
+
 
   @Override
   public void onAdblockSettingsChanged(BaseSettingsFragment fragment) {
@@ -97,8 +95,7 @@ public class SettingsActivity
   @Override
   public boolean isValidDomain(WhitelistedDomainsSettingsFragment fragment,
                                String domain,
-                               AdblockSettings settings)
-  {
+                               AdblockSettings settings) {
     // show error here if domain is invalid
     return domain != null && domain.length() > 0;
   }
