@@ -30,17 +30,7 @@
             />
 
 
-    <EditText
-
-        android:hint="Search or Url"
-        android:id="@+id/main_url"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textUri"
-        android:imeOptions="actionDone"
-        android:maxLines="1"/>
-
-    <ProgressBar
+        <ProgressBar
         android:id="@+id/main_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
