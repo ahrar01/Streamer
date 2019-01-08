@@ -1,4 +1,4 @@
-package com.teammanagementapp.ankush.streamer.activity;
+package com.teammanagementapp.ankush.streamer;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         initControls();
+
 
     }
 
@@ -146,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setProgressVisible(true);
@@ -161,15 +162,9 @@ public class MainActivity extends AppCompatActivity {
             // injectScriptFile(view, "js/script.js");
         }
 
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-        }
+    }
 
-
-
-
-    };
-
+            //////////////////
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         MenuInflater myMenuInflater = getMenuInflater();
@@ -232,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
         private Bitmap mDefaultVideoPoster;
         private View mVideoProgressView;
+
 
 
         @Override
@@ -303,6 +299,16 @@ public class MainActivity extends AppCompatActivity {
             mCustomView = null;
         }
 
+
+        webView.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+                Uri myUri = Uri.parse(url);
+                Intent superIntent = new Intent(Intent.ACTION_VIEW);
+                superIntent.setData(myUri);
+                startActivity(superIntent);
+            }
+        });
 
     };
 
